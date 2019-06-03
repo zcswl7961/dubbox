@@ -572,7 +572,9 @@ public class ExtensionLoader<T> {
         return classes;
 	}
 
-    // 此方法已经getExtensionClasses方法同步过。
+    /**
+     *  此方法已经getExtensionClasses方法同步过。
+      */
     private Map<String, Class<?>> loadExtensionClasses() {
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if(defaultAnnotation != null) {
