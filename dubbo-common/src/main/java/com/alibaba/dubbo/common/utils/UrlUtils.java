@@ -123,6 +123,12 @@ public class UrlUtils {
         return u;
     }
 
+    /**
+     * 根据注册的<dubbo:register address></dubbo:register>数据生成对应的URL数据
+     * @param address
+     * @param defaults
+     * @return
+     */
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
             return null;

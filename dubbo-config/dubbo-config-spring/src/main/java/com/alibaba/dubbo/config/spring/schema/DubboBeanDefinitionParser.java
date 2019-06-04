@@ -56,6 +56,7 @@ import com.alibaba.dubbo.rpc.Protocol;
 
 /**
  * AbstractBeanDefinitionParser
+ * <dubbo:x></dubbo:x>标签解析
  * 
  * @author william.liangf
  * @export
@@ -79,6 +80,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     
     @SuppressWarnings("unchecked")
     private static BeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+        //test
+        /**
+         * ServiceBean的BeanDefinition中的id为interface属性的值
+         */
+        if(beanClass.equals(ServiceBean.class)) {
+            logger.info("current dub ServiceBean class");
+        }
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
@@ -135,6 +143,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
         Set<String> props = new HashSet<String>();
         ManagedMap parameters = null;
+        /**
+         * 通过反射的方式注入属性值
+         */
         for (Method setter : beanClass.getMethods()) {
             String name = setter.getName();
             if (name.length() > 3 && name.startsWith("set")
@@ -228,7 +239,11 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                     }
                                     reference = new RuntimeBeanReference(value);
                                 }
+                                /**
+                                 * 对应beanDefintion对象，注入指定的值的结果
+                                 */
 		                        beanDefinition.getPropertyValues().addPropertyValue(property, reference);
+		                        //test
                             }
                     	}
                     }

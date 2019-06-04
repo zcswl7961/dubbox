@@ -25,6 +25,7 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 
 /**
  * AdaptiveExtensionFactory
+ * 所有的SPI类(除了ExtensionFactory为，这个是null）,对应的ExtensionLoader实例的objectFactory属性的类型都是AdaptiveExtensionFactory类
  * 
  * @author william.liangf
  */
@@ -32,7 +33,14 @@ import com.alibaba.dubbo.common.extension.ExtensionLoader;
 public class AdaptiveExtensionFactory implements ExtensionFactory {
     
     private final List<ExtensionFactory> factories;
-    
+
+    /**
+     * ExtensionFactory中只会存储对应的两个类
+     * pring=com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory
+     　　spi=com.alibaba.dubbo.common.extension.factory.SpiExtensionFactory
+
+     adaptive=com.alibaba.dubbo.common.extension.factory.AdaptiveExtensionFactory是保存在cachedAdaptiveClass上的
+     */
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
         List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();

@@ -65,5 +65,9 @@ public class StringUtilsTest extends TestCase
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
+		assertEquals("name",StringUtils.camelToSplitName("name","-"));
+		//ab#cd
+		assertEquals("ab-cd",StringUtils.camelToSplitName("ab#cd","#"));
+
     }
 }

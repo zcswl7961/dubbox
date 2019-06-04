@@ -31,6 +31,7 @@ import com.alibaba.dubbo.config.spring.ServiceBean;
 
 /**
  * DubboNamespaceHandler
+ * dubbo自定义命名标签解析
  * 
  * @author william.liangf
  * @export

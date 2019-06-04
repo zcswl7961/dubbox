@@ -51,7 +51,10 @@ import com.alibaba.dubbo.common.utils.StringUtils;
  * </ul>
  * 
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">JDK5.0的自动发现机制实现</a>
- * 
+ *
+ * @notify： by zhoucg
+ * 动态获取SPI接口的实例，最简单的方式就是调用ExtensionLoader实例的 T getExtension(String name)方法
+ * 传入的参数就是上述描述的文件中的key，而ExtensionFactory的作用就是为了完成SPI实例间的依赖注入
  * @author william.liangf
  * @author ding.lid
  *
@@ -70,17 +73,23 @@ public class ExtensionLoader<T> {
     private static final String DUBBO_INTERNAL_DIRECTORY = DUBBO_DIRECTORY + "internal/";
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
-    
+
+    /**
+     * key:Class?
+     * value : ExtensionLoader?
+     */
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<Class<?>, ExtensionLoader<?>>();
 
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<Class<?>, Object>();
-
-    // ==============================
 
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;
 
+    /**
+     * key：扩展类全名称 class com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory
+     * value:spring
+     */
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String,Class<?>>>();
@@ -103,7 +112,14 @@ public class ExtensionLoader<T> {
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(SPI.class);
     }
-    
+
+
+    /**
+     * 传入指定类型T的Class对象，返回指定对应的ExtensionLoader类型，其实就是将类型T的class对象作为构造函数传入ExtensionLoader(Class<T> type)
+     * @param type
+     * @param <T>
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null)
@@ -111,6 +127,9 @@ public class ExtensionLoader<T> {
         if(!type.isInterface()) {
             throw new IllegalArgumentException("Extension type(" + type + ") is not interface!");
         }
+        /**
+         * 含有对应@SPI注解
+         */
         if(!withExtensionAnnotation(type)) {
             throw new IllegalArgumentException("Extension type(" + type + 
                     ") is not extension, because WITHOUT @" + SPI.class.getSimpleName() + " Annotation!");
@@ -126,6 +145,9 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
+        /**
+         * 获取对应ExtensionFactory类型的ExtensionLoader
+         */
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
     
@@ -443,6 +465,10 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * 动态生成接口的代理类
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
@@ -506,6 +532,7 @@ public class ExtensionLoader<T> {
                 EXTENSION_INSTANCES.putIfAbsent(clazz, (T) clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
+            //此处将要完成注入工作，这跟Spring的Bean创建的过程类似，要完成一些依赖注入工作,在后面也能看到ExtensionFactory的作用
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && wrapperClasses.size() > 0) {
@@ -523,14 +550,20 @@ public class ExtensionLoader<T> {
     private T injectExtension(T instance) {
         try {
             if (objectFactory != null) {
+                //获取instance中的所有的方法
                 for (Method method : instance.getClass().getMethods()) {
+                    //找出满足三要素条件的方法（1.set为前缀的 2.方法参数为1个的 3.是public的方法）
                     if (method.getName().startsWith("set")
                             && method.getParameterTypes().length == 1
                             && Modifier.isPublic(method.getModifiers())) {
+                        //取出要set的类型
                         Class<?> pt = method.getParameterTypes()[0];
                         try {
+                            //去除set的属性名
                             String property = method.getName().length() > 3 ? method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4) : "";
+                            //调用ExtensionFactory的getExtension方法获取要set的对
                             Object object = objectFactory.getExtension(pt, property);
+                            //此时我们就可以将ExtensionFactory看作容器，判断这个要set的属性在容器中是否存在
                             if (object != null) {
                                 method.invoke(instance, object);
                             }
@@ -588,20 +621,42 @@ public class ExtensionLoader<T> {
                 if(names.length == 1) cachedDefaultName = names[0];
             }
         }
-        
+
+        /**
+         *
+         */
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
         loadFile(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
         loadFile(extensionClasses, DUBBO_DIRECTORY);
         loadFile(extensionClasses, SERVICES_DIRECTORY);
         return extensionClasses;
     }
-    
+
+    /**
+     * 根据指定的目录地址，并且根据指定的扩展类的Name信息拼接为完整的目录
+     *          META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory
+     * 通过获取当前类的加载器的ClassLoader，使用getResource()方法获取到当前目录的url信息
+     * 读取指定目录文件的信息，将对应的信息封装到extensionClasses的map中
+     * key:
+     * value:
+     * 参考/META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory中的内容。根据=进行解析
+     * @param extensionClasses
+     * @param dir
+     */
     private void loadFile(Map<String, Class<?>> extensionClasses, String dir) {
+        /**
+         * META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory
+         *
+         *
+         */
         String fileName = dir + type.getName();
         try {
             Enumeration<java.net.URL> urls;
             ClassLoader classLoader = findClassLoader();
             if (classLoader != null) {
+                /**
+                 * 根据指定的目录获取对应的url地址，目录映射url
+                 */
                 urls = classLoader.getResources(fileName);
             } else {
                 urls = ClassLoader.getSystemResources(fileName);
@@ -735,8 +790,11 @@ public class ExtensionLoader<T> {
     }
     
     private Class<?> createAdaptiveExtensionClass() {
+        //创建接口的代理实现类
         String code = createAdaptiveExtensionClassCode();
+        //获取当前类加载器
         ClassLoader classLoader = findClassLoader();
+        //获取代码编译器
         com.alibaba.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         return compiler.compile(code, classLoader);
     }
