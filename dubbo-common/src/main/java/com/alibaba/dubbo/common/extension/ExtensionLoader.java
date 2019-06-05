@@ -633,13 +633,16 @@ public class ExtensionLoader<T> {
     }
 
     /**
-     * 根据指定的目录地址，并且根据指定的扩展类的Name信息拼接为完整的目录
+     * 根据指定的目录地址，并且根据指定的SPI扩展类的Name信息拼接为完整的目录
      *          META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory
      * 通过获取当前类的加载器的ClassLoader，使用getResource()方法获取到当前目录的url信息
      * 读取指定目录文件的信息，将对应的信息封装到extensionClasses的map中
      * key:
      * value:
      * 参考/META-INF/dubbo/internal/com.alibaba.dubbo.common.extension.ExtensionFactory中的内容。根据=进行解析
+     * 缓存预处理的结果，
+     *      （1）带Adaptive注解的实现类会被缓存在cachedAdaptiveClass上
+     *      （2）其他的会被缓存在cachedClasses上
      * @param extensionClasses
      * @param dir
      */
@@ -682,11 +685,16 @@ public class ExtensionLoader<T> {
                                         }
                                         if (line.length() > 0) {
                                             Class<?> clazz = Class.forName(line, true, classLoader);
+                                            //缺保每一次读到的类都是SPI接口的实现类
                                             if (! type.isAssignableFrom(clazz)) {
                                                 throw new IllegalStateException("Error when load extension class(interface: " +
                                                         type + ", class line: " + clazz.getName() + "), class " 
                                                         + clazz.getName() + "is not subtype of interface.");
                                             }
+                                            // 如果实现类上有Adaptive注解，则将读到的类赋值给ExtensionLoader类的实例属性cachedAdaptiveClass
+                                            /**
+                                             * AdaptiveExtensionFactory类
+                                             */
                                             if (clazz.isAnnotationPresent(Adaptive.class)) {
                                                 if(cachedAdaptiveClass == null) {
                                                     cachedAdaptiveClass = clazz;
@@ -697,6 +705,10 @@ public class ExtensionLoader<T> {
                                                 }
                                             } else {
                                                 try {
+                                                    /**
+                                                     * 如果这个带参的构造函数存在 , 则说明当前的读到的Class是有包装类的
+                                                     * 则先将Class的类对象clazz放入ExtensionLoader类的实例属性 cachedWrapperClasses中
+                                                     */
                                                     clazz.getConstructor(type);
                                                     Set<Class<?>> wrappers = cachedWrapperClasses;
                                                     if (wrappers == null) {
@@ -706,7 +718,7 @@ public class ExtensionLoader<T> {
                                                     wrappers.add(clazz);
                                                 } catch (NoSuchMethodException e) {
                                                     clazz.getConstructor();
-                                                    if (name == null || name.length() == 0) {
+                                                    if (name == null || name.length() == 0) { //对应SPI接口的文件的key
                                                         name = findAnnotationName(clazz);
                                                         if (name == null || name.length() == 0) {
                                                             if (clazz.getSimpleName().length() > type.getSimpleName().length()
@@ -719,8 +731,10 @@ public class ExtensionLoader<T> {
                                                     }
                                                     String[] names = NAME_SEPARATOR.split(name);
                                                     if (names != null && names.length > 0) {
+                                                        //判断类上是否有Activate注解
                                                         Activate activate = clazz.getAnnotation(Activate.class);
                                                         if (activate != null) {
+                                                            //如果Activate注解存在则放入到ExtensionLoader类的实例属性cachedActivates中
                                                             cachedActivates.put(names[0], activate);
                                                         }
                                                         for (String n : names) {
@@ -780,7 +794,11 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("Can not create adaptive extenstion " + type + ", cause: " + e.getMessage(), e);
         }
     }
-    
+
+    /**
+     * 获取AdaptiveExtensionClass对象
+     * @return
+     */
     private Class<?> getAdaptiveExtensionClass() {
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
@@ -788,7 +806,17 @@ public class ExtensionLoader<T> {
         }
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
-    
+
+    /**
+     * (1)只有当相应的SPI接口的所有方法上是否有带Adaptive注解的方法，
+     * 如果有就会生成动态类的代码然后进行动态编译（比如使用javassist框架）,如果没有带Adaptive注解的方法 ,
+     * 那就说明该SPI接口是没有Adaptive性质的实现类的，就会拋出异常
+     * (2)动态类的本质也是在实现相应的SPI接口,它最终也是在调一个现成的SPI实现类来工作，这样就会有这样的疑问，
+     * 那为何不直接指定呢，还非得用动态的呢，呵呵，这就是为什么
+     * 凡是在方法上出现Adaptive注解的SPI的Adaptive形式都要动态的原因了，
+     * 因为dubbo这样一来就可以做到用不同的Adaptive方法，调不同的SPI实现类去处理。
+     * @return
+     */
     private Class<?> createAdaptiveExtensionClass() {
         //创建接口的代理实现类
         String code = createAdaptiveExtensionClassCode();

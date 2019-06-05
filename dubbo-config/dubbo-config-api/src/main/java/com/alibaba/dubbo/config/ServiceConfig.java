@@ -116,6 +116,11 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 		return unexported;
 	}
 
+
+    /**
+     * 1，spring容器初始化完成所有的bean实例化之后，通过事件触发调用
+     * 2，实现InitializingBean的方法中进行促发
+     */
     public synchronized void export() {
         if (provider != null) {
             if (export == null) {
@@ -329,7 +334,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }
         }
-
+        /**
+         * 这段主要是获取各个协义需要暴露的端口, 按照这样的优先级去获取  ：
+         　　　　Protocol的实现类的默认端口 ——> Protocol的配置端口 ——> 随机端口
+         */
         Integer port = protocolConfig.getPort();
         if (provider != null && (port == null || port == 0)) {
             port = provider.getPort();
@@ -501,15 +509,27 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
 
+    /**
+     * dubbo服务的本地暴露，显然是针对当服务消费者和服务提供者都在同一个jvm的进程内这种场景
+     * 通常是发生在服务之间的调用的情况下。一种情况就是A服务调用B服务的情况
+     * 如果A服务和B服务都是在一个线程中进行服务暴露的，就是本地调用。
+     * @param url
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void exportLocal(URL url) {
         if (!Constants.LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            /**
+             * injvm://127.0.0.1/com.alibaba.dubbo.demo.bid.BidService?anyhost=true&application=demo-provider&dubbo=2.0.0
+             * &generic=false&interface=com.alibaba.dubbo.demo.bid.BidService&methods=throwNPE,bid&organization=dubbox&
+             * owner=programmer&pid=21036&serialization=kryo&side=provider&timestamp=1559730048091
+             */
             URL local = URL.valueOf(url.toFullString())
                     .setProtocol(Constants.LOCAL_PROTOCOL)
                     .setHost(NetUtils.LOCALHOST)
                     .setPort(0);
 
             // modified by lishen
+            // ServiceClassHolder是用来保存当前服务接口实例ref对应的Class的,是一个简单的单例实现
             ServiceClassHolder.getInstance().pushServiceClass(getServiceClass(ref));
 
             Exporter<?> exporter = protocol.export(

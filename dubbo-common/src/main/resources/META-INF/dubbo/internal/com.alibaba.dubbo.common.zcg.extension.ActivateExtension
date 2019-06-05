@@ -1,0 +1,5 @@
+group=com.alibaba.dubbo.common.zcg.extension.GroupActivateExtImpl
+value=com.alibaba.dubbo.common.zcg.extension.ValueActivateExtImpl
+order1=com.alibaba.dubbo.common.zcg.extension.OrderActivateExtImpl1
+order2=com.alibaba.dubbo.common.zcg.extension.OrderActivateExtImpl2
+com.alibaba.dubbo.common.zcg.extension.ActivateExtensionImpl1

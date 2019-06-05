@@ -1,3 +1,2 @@
 adaptive=com.alibaba.dubbo.common.extension.factory.AdaptiveExtensionFactory
 spi=com.alibaba.dubbo.common.extension.factory.SpiExtensionFactory
-local=com.alibaba.dubbo.common.zcg.extension.LocalExtensionFactory

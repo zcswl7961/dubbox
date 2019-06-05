@@ -116,6 +116,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parserContext.getRegistry().registerBeanDefinition(id, beanDefinition);
             beanDefinition.getPropertyValues().addPropertyValue("id", id);
         }
+        /**
+         * dubbo:protocol：标签解析
+         * <dubbo:protocol name="dubbo" port="20880" serialization="kryo"/>
+         */
         if (ProtocolConfig.class.equals(beanClass)) {
             for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
                 BeanDefinition definition = parserContext.getRegistry().getBeanDefinition(name);
@@ -127,7 +131,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     }
                 }
             }
+
         } else if (ServiceBean.class.equals(beanClass)) {
+            /**
+             * dubbo:service:标签解析
+             * <dubbo:service interface="com.alibaba.dubbo.demo.bid.BidService" ref="bidService"  protocol="dubbo"/>
+             */
             String className = element.getAttribute("class");
             if(className != null && className.length() > 0) {
                 RootBeanDefinition classDefinition = new RootBeanDefinition();

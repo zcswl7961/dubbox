@@ -45,7 +45,11 @@ import com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory;
 /**
  * ServiceFactoryBean
  * <dubbo:service
- * 
+ * <dubbo:service interface="com.alibaba.dubbo.demo.bid.BidService" ref="bidService"  protocol="dubbo"/>
+ * className: id -> name --> interface -->class.getName()
+ * 1,对服务bean的实例进行初始化，详见afterPropertiesSet（）方法
+ * 2,暴露服务，详见onApplicationEvent(ApplicationEvent event)方法，
+ * 这个方法的触发时机是在spring的IOC容器完成所有的bean的实例化和初始化工作之后，会发出一个ContextRefreshedEvent类型的事件，如果我们关心该类型事件则实现ApplicationListener接口就可以，IOC容器就会在恰当的时机去调用我们实现的ApplicationListener接口中的代码逻辑， 而dubbo就是利用这个机制和时机完成了每个服务接口的暴露工作。
  * @author william.liangf
  * @export
  */
