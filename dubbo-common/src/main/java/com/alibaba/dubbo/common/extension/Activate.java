@@ -34,7 +34,6 @@ import java.lang.annotation.Target;
  * <p />
  * 底层框架SPI提供者通过{@link com.alibaba.dubbo.common.extension.ExtensionLoader}的{@link ExtensionLoader#getActivateExtension}方法
  * 获得条件的扩展。
- *
  * @author william.liangf
  * @author ding.lid
  * @export

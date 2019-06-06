@@ -352,6 +352,15 @@ public class ExtensionLoaderTest {
         }
     }
 
+    /**
+     * 基础测试模块
+     * Dubbo SPI之Activate
+     * 1. 根据loader.getActivateExtension中的group和搜索到此类型的实例进行比较，如果group能匹配到，就是我们选择的，也就是在此条件下需要激活的
+     * 2. @Activate中的value是参数是第二层过滤参数（第一层是通过group）
+     * 3. 在group校验通过的前提下，如果URL中的参数（k）与值（v）中的参数名同@Activate中的value值一致或者包含，那么才会被选中 ?
+     * 4. @Activate的order参数对于同一个类型的多个扩展来说，order值越小，优先级越高。
+     * @throws Exception
+     */
     @Test
     public void testLoadActivateExtension() throws Exception {
         // test default
@@ -370,12 +379,14 @@ public class ExtensionLoaderTest {
 
         // test value
         url = url.removeParameter(Constants.GROUP_KEY);
-        url = url.addParameter(Constants.GROUP_KEY, "value");
-        url = url.addParameter("value", "value");
+        url = url.addParameter(Constants.GROUP_KEY, "value2");
+        url = url.addParameter("value", "测试");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
-                .getActivateExtension(url, new String[]{}, "value");
+                .getActivateExtension(url, new String[]{"haha","zcg"}, "value");
         Assert.assertEquals(1, list.size());
         Assert.assertTrue(list.get(0).getClass() == ValueActivateExtImpl.class);
+
+
 
         // test order
         url = URL.valueOf("test://localhost/test");
@@ -387,12 +398,19 @@ public class ExtensionLoaderTest {
         Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl2.class);
     }
 
+    /**
+     * ExtensionLoader.getActivateExtension(url,String key,String group)
+     * 1,首先是匹配出SPI扩展类中所有符合group的数据，加入到list中 --> 就是SPI扩展类的实现类中，定义了@Activate(group="group"),group属性相等
+     * 2,然后是如果传入的第二个参数是key，首先是从url中getParameter(key)，获取对应的values，封装成values，
+     * 3,接着是找到SPI扩展文件中，对应的value的扩展实现类
+     * @throws Exception
+     */
     @Test
     public void testLoadDefaultActivateExtension() throws Exception {
         // test default
-        URL url = URL.valueOf("test://localhost/test?ext=order1,default");
+        URL url = URL.valueOf("test://localhost/test?ext=order1,order2");
         List<ActivateExt1> list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
-                .getActivateExtension(url, "ext", "default_group");
+                .getActivateExtension(url, "ext", "leronjames");
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0).getClass() == OrderActivateExtImpl1.class);
         Assert.assertTrue(list.get(1).getClass() == ActivateExt1Impl1.class);

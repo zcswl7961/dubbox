@@ -87,15 +87,21 @@ public class ExtensionLoader<T> {
     private final ExtensionFactory objectFactory;
 
     /**
-     * key：扩展类全名称 class com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory
+     * key：SPI扩展实现类全名称 class com.alibaba.dubbo.config.spring.extension.SpringExtensionFactory
      * value:spring
      */
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<Class<?>, String>();
     
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<Map<String,Class<?>>>();
 
+    /**
+     * SPI扩展文件中，类上含有@Activate注解的信息
+     * key：SPI扩展文件的key
+     * value：Activate注解信息
+     */
     private final Map<String, Activate> cachedActivates = new ConcurrentHashMap<String, Activate>();
 
+    //用于存放指定AdaptiveClass数据
     private volatile Class<?> cachedAdaptiveClass = null;
 
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<String, Holder<Object>>();
@@ -205,7 +211,11 @@ public class ExtensionLoader<T> {
 
     /**
      * Get activate extensions.
-     *
+     * 获取指定ExtensionLoader的Activate数据
+     * 1. 根据loader.getActivateExtension中的group和搜索到此类型的实例进行比较，如果group能匹配到，就是我们选择的，也就是在此条件下需要激活的
+     * 2. @Activate中的value是参数是第二层过滤参数（第一层是通过group）
+     * 3. 在group校验通过的前提下，如果URL中的参数（k）与值（v）中的参数名同@Activate中的value值一致或者包含，那么才会被选中 ?
+     * 4. @Activate的order参数对于同一个类型的多个扩展来说，order值越小，优先级越高。
      * @see com.alibaba.dubbo.common.extension.Activate
      * @param url url
      * @param values extension point names
@@ -214,7 +224,13 @@ public class ExtensionLoader<T> {
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> exts = new ArrayList<T>();
+        /**
+         * 将传递的values数据信息包装成List
+         */
         List<String> names = values == null ? new ArrayList<String>(0) : Arrays.asList(values);
+        /**
+         * 包装的values数据中不包含
+         */
         if (! names.contains(Constants.REMOVE_VALUE_PREFIX + Constants.DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Activate> entry : cachedActivates.entrySet()) {
@@ -719,6 +735,11 @@ public class ExtensionLoader<T> {
                                                 } catch (NoSuchMethodException e) {
                                                     clazz.getConstructor();
                                                     if (name == null || name.length() == 0) { //对应SPI接口的文件的key
+                                                        /**
+                                                         * 从SPI扩展文件中，如果不存在以key=value形式的配置，name信息获取从对应Class对象中获取注解信息
+                                                         * 1，先去判断类是否存在Extension注解信息，如果存在，获取Extension上的信息
+                                                         * 2，没有的话，将类名首字母小写，赋值name
+                                                         */
                                                         name = findAnnotationName(clazz);
                                                         if (name == null || name.length() == 0) {
                                                             if (clazz.getSimpleName().length() > type.getSimpleName().length()
