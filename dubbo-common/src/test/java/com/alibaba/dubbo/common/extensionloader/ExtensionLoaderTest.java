@@ -371,7 +371,8 @@ public class ExtensionLoaderTest {
         Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
 
         // test group
-        url = url.addParameter(Constants.GROUP_KEY, "group1");
+        url = url.addParameter("zcg","value的数据");
+        url = url.addParameter("wl","wl的数据");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "group1");
         Assert.assertEquals(1, list.size());
@@ -382,7 +383,7 @@ public class ExtensionLoaderTest {
         url = url.addParameter(Constants.GROUP_KEY, "value2");
         url = url.addParameter("value", "测试");
         list = ExtensionLoader.getExtensionLoader(ActivateExt1.class)
-                .getActivateExtension(url, new String[]{"haha","zcg"}, "value");
+                .getActivateExtension(url, new String[]{"wl","zcg"}, "group");
         Assert.assertEquals(1, list.size());
         Assert.assertTrue(list.get(0).getClass() == ValueActivateExtImpl.class);
 
