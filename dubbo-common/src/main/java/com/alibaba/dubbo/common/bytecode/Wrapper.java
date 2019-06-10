@@ -421,8 +421,8 @@ public abstract class Wrapper
 	    }
 	    for(Method m : methods){
 	        if(m.getDeclaringClass() != Object.class){
-	            return true;
-	        }
+				return true;
+			}
 	    }
 	    return false;
 	}

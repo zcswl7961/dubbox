@@ -16,8 +16,11 @@
 package com.alibaba.dubbo.common.bytecode;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
+import com.sun.jmx.snmp.internal.SnmpSubSystem;
 import junit.framework.TestCase;
+import org.junit.Test;
 
 public class ClassGeneratorTest extends TestCase
 {
@@ -33,6 +36,7 @@ public class ClassGeneratorTest extends TestCase
 				fname = f;
 		}
 
+
 		ClassGenerator cg = ClassGenerator.newInstance();
 		cg.setClassName(Bean.class.getName() + "$Builder");
 		cg.addInterface(Builder.class);
@@ -41,6 +45,7 @@ public class ClassGeneratorTest extends TestCase
 
 		cg.addMethod("public Object getName("+Bean.class.getName()+" o){ boolean[][][] bs = new boolean[0][][]; return (String)FNAME.get($1); }");
 		cg.addMethod("public void setName("+Bean.class.getName()+" o, Object name){ FNAME.set($1, $2); }");
+		cg.addMethod("public void hello(String des) {System.out.println(des);}");
 
 		cg.addDefaultConstructor();
 		Class<?> cl = cg.toClass();
@@ -51,7 +56,25 @@ public class ClassGeneratorTest extends TestCase
 		System.out.println(b.getName());
 		builder.setName(b, "ok");
 		System.out.println(b.getName());
+
+        cl.getMethod("hello", String.class).invoke(cl.newInstance(), "hello");
+
+
+
 	}
+
+	@Test
+	public void testMethod() {
+
+        Method[] methods = Bean.class.getMethods();
+        assertEquals(11,methods.length);
+
+        Method[] declaredMethods = Bean.class.getDeclaredMethods();
+        assertEquals(4,declaredMethods.length);
+        for(Method method : declaredMethods) {
+            System.out.println(method.getName());
+        }
+    }
 }
 
 class Bean
@@ -68,6 +91,14 @@ class Bean
 	public String getName()
 	{
 		return name;
+	}
+
+	private void print() {
+		System.out.println("hello word");
+	}
+
+	void notPublic() {
+		System.out.println("not public");
 	}
 }
 

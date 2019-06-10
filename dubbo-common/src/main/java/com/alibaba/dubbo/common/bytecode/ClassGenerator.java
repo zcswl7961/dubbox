@@ -42,7 +42,31 @@ import javassist.NotFoundException;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
 
 /**
- * ClassGenerator
+ * 借助于javassisst包生成指定class文件
+ * <p>调用示例参考test测试示例数据
+ *
+ * <p>class字节码动态生成器，标准的使用方法
+ * 		<code>
+ * 		 		ClassGenerator cg = ClassGenerator.newInstance(); //单例的方式创建对应的ClassGenerator对象
+ * 		 		cg.setClassName(Bean.class.getName() + "$Builder"); //设置className,被创建class对象类名全路径
+ * 		 		cg.addInterface(Builder.class);	 //设置对应的实现接口
+ *
+ * 		 		cg.addField("public static java.lang.reflect.Field FNAME;");//增加成员标量
+ *
+ * 				cg.addMethod("public void setName("+Bean.class.getName()+" o, Object name){ FNAME.set($1, $2); }");//增加方法
+ *
+ * 				cg.addDefaultConstructor();//设置默认构造函数
+ *
+ * 				Class<?> cl = cg.toClass(); //获取对应创建实体类的方法
+ *				cl.getField("FNAME").set(null, fname);
+ *
+ *				System.out.println(cl.getName());
+ *				Builder<String> builder = (Builder<String>)cl.newInstance();
+ *				System.out.println(b.getName());
+ *				builder.setName(b, "ok");
+ *				System.out.println(b.getName());
+ *
+ * 		</code>
  * 
  * @author qian.lei
  */
@@ -67,6 +91,13 @@ public final class ClassGenerator
 		return new ClassGenerator(getClassPool(loader));
 	}
 
+	/**
+	 * class1.isAssignableFrom(class2):
+	 * 		判定此 Class 对象所表示的类或接口与指定的 Class 参数所表示的类或接口是否相同
+	 * class2是不是class1的子类或者子接口
+	 * @param cl
+	 * @return
+	 */
 	public static boolean isDynamicClass(Class<?> cl)
 	{
 		return ClassGenerator.DC.class.isAssignableFrom(cl);
