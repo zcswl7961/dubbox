@@ -287,6 +287,20 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     private void doExportUrls() {
         List<URL> registryURLs = loadRegistries(true);
         for (ProtocolConfig protocolConfig : protocols) {
+            /**
+             * protocolConfig：<dubbo:protocol name="dubbo" port="20880" serialization="kryo" id="dubbo" />
+             * registryURLs:registry://127.0.0.1:2181/com.alibaba.dubbo.registry.RegistryService?
+             *                                          application=demo-provider&
+             *                                          client=curator&
+             *                                          dubbo=2.0.0&
+             *                                          organization=dubbox&
+             *                                          owner=programmer&
+             *                                          pid=19716&
+             *                                          registry=zookeeper&
+             *                                          timeout=30000&
+             *                                          timestamp=1560161419967&
+             *                                          version=1.0
+             */
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -474,6 +488,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
             //配置不是remote的情况下做本地暴露 (配置为remote，则表示只暴露远程服务)
             if (!Constants.SCOPE_REMOTE.toString().equalsIgnoreCase(scope)) {
+                /**
+                 * 这一部先去掉对应的本地暴露
+                 */
                 exportLocal(url);
             }
             //如果配置不是local则暴露为远程服务.(配置为local，则表示只暴露远程服务)
@@ -492,8 +509,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         if (logger.isInfoEnabled()) {
                             logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                         }
+                        //执行JavassistProxyFactory#getInvoker方法
                         Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
                         logger.info("dubbo url:["+invoker.getUrl()+"]");
+                        //到这个
                         Exporter<?> exporter = protocol.export(invoker);
                         exporters.add(exporter);
                     }
