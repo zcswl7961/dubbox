@@ -474,6 +474,23 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if ((contextPath == null || contextPath.length() == 0) && provider != null) {
             contextPath = provider.getContextpath();
         }
+        /**
+         * dubbo://192.168.72.3:20880/
+         *          com.alibaba.dubbo.demo.bid.BidService?
+         *          anyhost=true&
+         *          application=demo-provider&
+         *          dubbo=2.0.0&
+         *          generic=false&
+         *          interface=com.alibaba.dubbo.demo.bid.BidService&
+         *          methods=throwNPE,bid&
+         *          organization=dubbox&
+         *          owner=programmer&
+         *          pid=15768&
+         *          scope=remote&
+         *          serialization=kryo&
+         *          side=provider&
+         *          timestamp=1561105733839
+         */
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -510,7 +527,43 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url + " to registry " + registryURL);
                         }
                         //执行JavassistProxyFactory#getInvoker方法
-                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                        /**
+                         * 这一步稍微的拆分一下
+                         * Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+                         */
+//                        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, url.toFullString()));
+
+                        /**
+                         * dubbo://192.168.72.3:20880/com.alibaba.dubbo.demo.bid.BidService?
+                         *      anyhost=true&
+                         *      application=demo-provider&
+                         *      dubbo=2.0.0&
+                         *      generic=false&
+                         *      interface=com.alibaba.dubbo.demo.bid.BidService&
+                         *      methods=throwNPE,bid&
+                         *      organization=dubbox&
+                         *      owner=programmer&
+                         *      pid=2348&
+                         *      scope=remote&
+                         *      serialization=kryo&
+                         *      side=provider&
+                         *      timestamp=1561106438810
+                         */
+                        String toFullStr = url.toFullString();
+                        /**
+                         * registry://127.0.0.1:2181/
+                         *      com.alibaba.dubbo.registry.RegistryService?
+                         *      application=demo-provider&
+                         *      client=curator&
+                         *      dubbo=2.0.0&
+                         *      export=dubbo%3A%2F%2F192.168.72.3%3A20880%2Fcom.alibaba.dubbo.demo.bid.BidService%3Fanyhost%3Dtrue%26application%3Ddemo-provider%26dubbo%3D2.0.0%26generic%3Dfalse%26interface%3Dcom.alibaba.dubbo.demo.bid.BidService%26methods%3DthrowNPE%2Cbid%26organization%3Ddubbox%26owner%3Dprogrammer%26pid%3D11932%26scope%3Dremote%26serialization%3Dkryo%26side%3Dprovider%26timestamp%3D1561106589422&organization=dubbox&owner=programmer&pid=11932&registry=zookeeper&timeout=30000&timestamp=1561106589368&version=1.0
+                         */
+                        URL parameterEncodeUrl = registryURL.addParameterAndEncoded(Constants.EXPORT_KEY, toFullStr);
+                        //test
+                        String urlProxy = parameterEncodeUrl.getParameter("proxy");
+                        logger.info("【dubbo-test】 current dubbo url:"+parameterEncodeUrl+" url proxy param:"+urlProxy);
+                        Invoker<?> invoker = proxyFactory.getInvoker(ref,(Class)interfaceClass,parameterEncodeUrl);
+                        //test end
                         logger.info("dubbo url:["+invoker.getUrl()+"]");
                         //到这个
                         Exporter<?> exporter = protocol.export(invoker);

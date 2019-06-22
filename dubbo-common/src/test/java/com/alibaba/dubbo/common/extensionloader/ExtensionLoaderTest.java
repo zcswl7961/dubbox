@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.alibaba.dubbo.common.Constants;
+import com.alibaba.dubbo.common.extension.ExtensionFactory;
 import com.alibaba.dubbo.common.extensionloader.activate.ActivateExt1;
 import com.alibaba.dubbo.common.extensionloader.activate.impl.ActivateExt1Impl1;
 import com.alibaba.dubbo.common.extensionloader.activate.impl.GroupActivateExtImpl;
@@ -56,6 +57,10 @@ import com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl.Ext5Wrapper1;
 import com.alibaba.dubbo.common.extensionloader.ext6_wrap.impl.Ext5Wrapper2;
 
 /**
+ * ExtensionLoader.getExtensionLoader(Class class);
+ * 1,class是接口类型
+ * 2,class是含有SPI注解的
+ * 3,class不能为null
  * @author ding.lid
  */
 public class ExtensionLoaderTest {
@@ -94,6 +99,10 @@ public class ExtensionLoaderTest {
         }
     }
 
+    /**
+     * 获取默认的Extension
+     * @throws Exception
+     */
     @Test
     public void test_getDefaultExtension() throws Exception {
         SimpleExt ext = ExtensionLoader.getExtensionLoader(SimpleExt.class).getDefaultExtension();
@@ -102,7 +111,11 @@ public class ExtensionLoaderTest {
         String name = ExtensionLoader.getExtensionLoader(SimpleExt.class).getDefaultExtensionName();
         assertEquals("impl1", name);
     }
-    
+
+    /**
+     * 没有对应的默认实现的情况下
+     * @throws Exception
+     */
     @Test
     public void test_getDefaultExtension_NULL() throws Exception {
         Ext2 ext = ExtensionLoader.getExtensionLoader(Ext2.class).getDefaultExtension();
@@ -422,6 +435,14 @@ public class ExtensionLoaderTest {
         Assert.assertEquals(2, list.size());
         Assert.assertTrue(list.get(0).getClass() == ActivateExt1Impl1.class);
         Assert.assertTrue(list.get(1).getClass() == OrderActivateExtImpl1.class);
+    }
+
+    @Test
+    public void getAdaptive() {
+        ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
+        ExtensionFactory extensionFactory = loader.getAdaptiveExtension();
+        System.out.println(extensionFactory);
+
     }
 
 }

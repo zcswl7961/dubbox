@@ -75,7 +75,7 @@ public class Main {
 	                }
 	            });
             }
-            
+            //启动容器(spring)
             for (Container container : containers) {
                 container.start();
                 logger.info("Dubbo " + container.getClass().getSimpleName() + " started!");

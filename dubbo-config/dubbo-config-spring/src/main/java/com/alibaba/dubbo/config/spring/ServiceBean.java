@@ -126,12 +126,16 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         if (delay == null && provider != null) {
             delay = provider.getDelay();
         }
+        //supportedApplicationListener属性在ServiceBean实现ApplicationContextAware接口的setApplicationContext已经设置为true
         return supportedApplicationListener && (delay == null || delay.intValue() == -1);
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
 	public void afterPropertiesSet() throws Exception {
         if (getProvider() == null) {
+            /**
+             * BeanFactoryUtil工具
+             */
             Map<String, ProviderConfig> providerConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, false, false);
             if (providerConfigMap != null && providerConfigMap.size() > 0) {
                 Map<String, ProtocolConfig> protocolConfigMap = applicationContext == null ? null  : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, false, false);
@@ -248,6 +252,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 }
             }
         }
+        //如果<dubbo:service没有配置url的时候
+        //由spring的IOC容器传入进来的。通过上文对dubbo配置的解析的源码分析可知，一般情况这个path属性就是服务接口的类的全路径名。
         if (getPath() == null || getPath().length() == 0) {
             if (beanName != null && beanName.length() > 0 
                     && getInterface() != null && getInterface().length() > 0

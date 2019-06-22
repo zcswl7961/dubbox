@@ -75,6 +75,11 @@ public final class ClassGenerator
 {
 	public static interface DC{} // dynamic class tag interface.
 
+
+	public static class DCIMPL implements DC{ //DC extends
+
+	}
+
 	private static final AtomicLong CLASS_NAME_COUNTER = new AtomicLong(0);
 
 	private static final String SIMPLE_NAME_TAG = "<init>";

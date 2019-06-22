@@ -32,8 +32,10 @@ public class ExtensionLoaderTestLocal {
     @Test
     public void testProtocol() {
         ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        Protocol protocol = loader.getAdaptiveExtension();
-        System.out.println(protocol);
+//        Protocol protocol = loader.getAdaptiveExtension();
+        Protocol dubboProtocol = loader.getExtension("dubbo");
+        System.out.println("dubbo:"+dubboProtocol);
+//        System.out.println(protocol);
     }
 
     @Test

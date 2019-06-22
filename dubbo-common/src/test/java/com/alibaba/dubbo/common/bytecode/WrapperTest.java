@@ -37,6 +37,14 @@ public class WrapperTest
 
 		w.invokeMethod(obj, "hello", new Class<?>[] {String.class}, new Object[]{ "qianlei" });
 	}
+
+	@Test
+	public void testDC() {
+    	Wrapper w = Wrapper.getWrapper(ClassGenerator.DCIMPL.class);
+    	String[] ns = w.getDeclaredMethodNames();
+    	System.out.println(ns.toString());
+	}
+
 	
 	// bug: DUBBO-132
     @Test

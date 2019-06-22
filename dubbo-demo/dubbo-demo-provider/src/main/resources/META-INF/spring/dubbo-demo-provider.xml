@@ -33,7 +33,7 @@
     <dubbo:protocol name="dubbo" port="20880" serialization="kryo"/>
 
     <!-- 声明需要暴露的服务接口 -->
-	<dubbo:service interface="com.alibaba.dubbo.demo.bid.BidService" ref="bidService"  protocol="dubbo"/>
+	<dubbo:service interface="com.alibaba.dubbo.demo.bid.BidService" ref="bidService"  protocol="dubbo" scope="remote"/>
     <!--<dubbo:service interface="com.alibaba.dubbo.demo.user.UserService" ref="userService"  protocol="dubbo" group="xmlConfig"/>-->
 
 
