@@ -440,7 +440,7 @@ public class ExtensionLoaderTest {
     @Test
     public void getAdaptive() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
-        ExtensionFactory extensionFactory = loader.getAdaptiveExtension();
+        ExtensionFactory extensionFactory = loader.getExtension("dubbo");
         System.out.println(extensionFactory);
 
     }

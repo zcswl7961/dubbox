@@ -233,6 +233,22 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        /**
+         * dubbo://192.168.72.3:20880/com.alibaba.dubbo.demo.bid.BidService?
+         *  anyhost=true&
+         *  application=demo-provider&
+         *  dubbo=2.0.0&
+         *  generic=false&
+         *  interface=com.alibaba.dubbo.demo.bid.BidService&
+         *  methods=throwNPE,bid&
+         *  organization=dubbox&
+         *  owner=programmer&
+         *  pid=4900&
+         *  scope=remote&
+         *  serialization=kryo&
+         *  side=provider&
+         *  timestamp=1561269036066
+         */
         URL url = invoker.getUrl();
         
         // export service.
@@ -254,7 +270,9 @@ public class DubboProtocol extends AbstractProtocol {
                 stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
             }
         }
-
+        /**
+         * 进入到打开服务
+         */
         openServer(url);
 
         // modified by lishen

@@ -140,4 +140,13 @@ public class ExtensionLoaderTestLocal {
         Assert.assertEquals("com.alibaba.dubbo.common.zcg.extension.OrderActivateExtImpl2",list3.get(1).getClass().getName());
 
     }
+
+    @Test
+    public void testProtocolAdaptive() {
+
+        ExtensionLoader<Protocol> extensionLoader = ExtensionLoader.getExtensionLoader(Protocol.class);
+        Protocol protocol = extensionLoader.getAdaptiveExtension();
+
+    }
+
 }

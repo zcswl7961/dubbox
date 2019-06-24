@@ -553,6 +553,8 @@ public class ExtensionLoader<T> {
             }
             //此处将要完成注入工作，这跟Spring的Bean创建的过程类似，要完成一些依赖注入工作,在后面也能看到ExtensionFactory的作用
             injectExtension(instance);
+            //这一步我当时还真没有好好的阅读
+            //http://uyunsoft.cn/pages/viewpage.action?pageId=78678947
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && wrapperClasses.size() > 0) {
                 for (Class<?> wrapperClass : wrapperClasses) {
