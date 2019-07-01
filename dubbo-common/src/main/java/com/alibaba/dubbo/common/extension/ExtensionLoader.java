@@ -563,6 +563,8 @@ public class ExtensionLoader<T> {
              * 最后获取getExtension（“name”）获取的实际上是包装类
              * 并且获取的顺序并不和其加载的顺序一致
              * 并不明白这个设计
+             * 官方给了这么一个解释
+             * https://dubbo.gitbooks.io/dubbo-dev-book/content/SPI.html
              *
              */
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
