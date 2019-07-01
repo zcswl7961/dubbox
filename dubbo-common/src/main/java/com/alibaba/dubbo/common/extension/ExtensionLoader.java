@@ -555,6 +555,16 @@ public class ExtensionLoader<T> {
             injectExtension(instance);
             //这一步我当时还真没有好好的阅读
             //http://uyunsoft.cn/pages/viewpage.action?pageId=78678947
+            /**
+             * 实际上：
+             * ExtensionLoader.getExtensionLoader().getExtension("name");获取的时候
+             * 当通过loaderFile获取存在对应的SPI扩展接口的实现类的时候，会存储其扩展接口的包装类cachedWraddperClasses
+             * 包装类的定义：只要类中含有类型为其扩展接口的构造函数的存在，就认为该类是该扩展接口的包装类
+             * 最后获取getExtension（“name”）获取的实际上是包装类
+             * 并且获取的顺序并不和其加载的顺序一致
+             * 并不明白这个设计
+             *
+             */
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
             if (wrapperClasses != null && wrapperClasses.size() > 0) {
                 for (Class<?> wrapperClass : wrapperClasses) {

@@ -145,7 +145,9 @@ public class ExtensionLoaderTestLocal {
     public void testProtocolAdaptive() {
 
         ExtensionLoader<Protocol> extensionLoader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        Protocol protocol = extensionLoader.getAdaptiveExtension();
+        Protocol protocol = extensionLoader.getExtension("dubbo");
+        System.out.println(protocol);
+//        Protocol protocol = extensionLoader.getAdaptiveExtension();
 
     }
 
