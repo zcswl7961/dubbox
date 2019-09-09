@@ -199,3 +199,7 @@ http://stackoverflow.com/questions/17196766/can-resteasy-choose-method-based-on-
 ### JAX-RS中作POST的方法能够接收多个参数吗？
 
 http://stackoverflow.com/questions/5553218/jax-rs-post-multiple-objects
+
+### Dubbo优雅的停机策略
+
+dubbo的优雅停机是依赖于JDK的ShutdownHook函数

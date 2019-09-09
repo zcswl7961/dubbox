@@ -38,6 +38,7 @@ import com.alibaba.dubbo.config.support.Parameter;
 
 /**
  * ReferenceFactoryBean
+ * 客户端调用
  * 
  * @author william.liangf
  * @export
