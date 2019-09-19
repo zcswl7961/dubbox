@@ -1,5 +1,6 @@
 ## dubbox源码解析
-https://github.com/dangdangdotcom/dubbox.git
+* https://github.com/dangdangdotcom/dubbox.git
+* 该源码的分析基于2019年6月3号之前进行衍生的分支代码，6月3号之后的代码修复没有合并
 
 ## 主要贡献者
 
